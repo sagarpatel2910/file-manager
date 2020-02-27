@@ -26,7 +26,7 @@ const octicons = require("octicons");
 const handlebars = require("handlebars");
 
 let app = express();
-let http = app.listen(process.env.PORT || 8080);
+let http = app.listen(process.env.PORT || 80 , "0.0.0.0");
 
 app.set("views", path.join(__dirname, "views"));
 app.engine("handlebars", hbs({
