@@ -1,0 +1,16 @@
+apiVersion : apps/v1beta1
+kind: Deployment
+metadata:
+  name: sagarpatelfilemanager 
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sagarpatelfilemanager 
+    spec:
+      containers:
+        - name: sagarpatelfilemanager 
+          image: sp2910.azurecr.io/sagarpatelfilemanager
+          ports:
+          - containerPort: 80
