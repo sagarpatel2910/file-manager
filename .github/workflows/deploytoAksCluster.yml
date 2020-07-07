@@ -1,0 +1,50 @@
+on: [push]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    
+    - uses: azure/docker-login@v1
+      with:
+        login-server: mycontpipelines.azurecr.io
+        username: ${{ secrets.acr_mycontpipelines_username }}
+        password: ${{ secrets.acr_mycontpipelines_password }}
+    
+    - name: Build and push image to ACR
+      id: build-image
+      run: |
+        docker build "$GITHUB_WORKSPACE/" -f  "Dockerfile" -t mycontpipelines.azurecr.io/kubet:${{ github.sha }}
+        docker push mycontpipelines.azurecr.io/kubet:${{ github.sha }}
+    
+    - uses: azure/k8s-set-context@v1
+      with:
+         kubeconfig: ${{ secrets.aks_kubet_kubeConfig }}
+      id: login
+    
+    - name: Create namespace
+      run: |
+        namespacePresent=`kubectl get namespace | grep kubet967a | wc -l`
+        if [ $namespacePresent -eq 0 ]
+        then
+            echo `kubectl create namespace kubet967a`
+        fi
+
+    - uses: azure/k8s-create-secret@v1
+      with:
+        namespace: kubet967a
+        container-registry-url: mycontpipelines.azurecr.io
+        container-registry-username: ${{ secrets.acr_mycontpipelines_username }}
+        container-registry-password: ${{ secrets.acr_mycontpipelines_password }}
+        secret-name: kubetdockerauth
+       
+    - uses: azure/k8s-deploy@v1
+      with:
+        namespace: kubet967a
+        manifests: |
+          manifests/deployment.yml
+          manifests/service.yml
+        images: |
+          mycontpipelines.azurecr.io/kubet:${{ github.sha }}
+        imagepullsecrets: |
+          kubetdockerauth
