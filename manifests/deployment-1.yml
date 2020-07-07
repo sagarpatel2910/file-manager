@@ -1,0 +1,16 @@
+apiVersion : apps/v1beta1
+kind: Deployment
+metadata:
+  name: "kubet-c1cd"
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: "kubet-c1cd"
+    spec:
+      containers:
+        - name: "kubet-c1cd"
+          image: "mycontpipelines.azurecr.io/kubet"
+          ports:
+          - containerPort: 80
